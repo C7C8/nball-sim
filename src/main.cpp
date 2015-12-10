@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <vector>
 using namespace std;
 using namespace Hydra;
 
@@ -22,6 +23,7 @@ using namespace Hydra;
 //#define AIR_RESISTANCE 0.001
 //#define DIST_CHECK
 #define COMSIZE 4.0
+#define TRAILLENGTH 50
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -37,6 +39,7 @@ struct nball
 	Vector2D forces;
 	double mass;
 	float size;
+	vector<SDL_Point> trail;
 };
 
 int main(int argc, char* argv[])
@@ -61,6 +64,7 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	bool edges = false;
 	bool centmass = true;
+	bool trails = true;
 	nball tempBall(sprite, 0, 0, 160);
 	bool placing = false;
 
@@ -160,6 +164,17 @@ int main(int argc, char* argv[])
 		{
 			iter->forces.setX(0);
 			iter->forces.setY(0);
+		}
+
+		//Add current positions to trail list
+		for (auto iter = balls.begin(); iter != balls.end(); iter++)
+		{
+			SDL_Point pos;
+			pos.x = iter->posX;
+			pos.y = iter->posY;
+			iter->trail.insert(iter->trail.begin(), pos); //Add to beginning
+			if (iter->trail.size() > TRAILLENGTH)
+				iter->trail.pop_back(); //Remove end
 		}
 
 		//Calculate forces
@@ -276,6 +291,27 @@ int main(int argc, char* argv[])
 		for (auto iter = balls.begin(); iter != balls.end(); iter++)
 			iter->render(engine);
 
+		//Trails
+		if (trails)
+		{
+			SDL_SetRenderDrawColor(engine->getRenderer(), 0, 0, 0, 0); //Black
+			for (auto iter = balls.begin(); iter != balls.end(); iter++)
+			{
+				for (auto point = iter->trail.begin(); point != iter->trail.end(); point++)
+				{
+					if (point == iter->trail.begin())
+					{
+						SDL_RenderDrawLine(engine->getRenderer(), iter->posX, iter->posY, point->x, point->y);
+						cout << "Rendering from ball to next trail point." << endl;
+						continue;
+					}
+					auto lastPoint = point - 1;
+					cout << "Rendering from point " << OUTPUT_COORDS(lastPoint->x, lastPoint->y)  " to " << OUTPUT_COORDS(point->x, point->y) << endl;
+					SDL_RenderDrawLine(engine->getRenderer(), lastPoint->x, lastPoint->y, point->x, point->y);
+				}
+			}
+		}
+
 		//Center of mass
 		if (centmass)
 		{
@@ -311,7 +347,7 @@ int main(int argc, char* argv[])
 		double Ek = 0;
 		for (auto iter = balls.begin(); iter != balls.end(); iter++)
 			Ek += iter->mass * pow(iter->vel.getMag(), 2.0) * 0.5;
-		cout << "Kinetic Energy: " << Ek << " J.\t";
+		//cout << "Kinetic Energy: " << Ek << " J.\t";
 
 		//Calculate total potential energy for debugging purposes
 		//http://physics.stackexchange.com/questions/146108/is-there-anything-interesting-about-an-n-body-system-whose-potential-energy-is-c
@@ -327,8 +363,8 @@ int main(int argc, char* argv[])
 			}
 		}
 		Ep *= -0.5;
-		cout << "GP Energy: " << Ep << "\tJ. Total: " << Ek + Ep << "J." <<endl;
-		log << frame << ", " << Ek << "," << Ep << "," << Ek + Ep << endl;
+		//cout << "GP Energy: " << Ep << "\tJ. Total: " << Ek + Ep << "J." <<endl;
+		//log << frame << ", " << Ek << "," << Ep << "," << Ek + Ep << endl;
 
 		engine->renderAll();
 	}

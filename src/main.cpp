@@ -23,7 +23,7 @@ using namespace Hydra;
 //#define AIR_RESISTANCE 0.001
 //#define DIST_CHECK
 #define COMSIZE 4.0
-#define TRAILLENGTH 50
+#define TRAILLENGTH 150
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
 	bool edges = false;
 	bool centmass = true;
 	bool trails = true;
+	bool persTrails = false; //Persistent trails
 	nball tempBall(sprite, 0, 0, 160);
 	bool placing = false;
 
@@ -156,6 +157,27 @@ int main(int argc, char* argv[])
 					balls.push_back(nm1);
 					balls.push_back(nm2);
 				}
+				else if (event.key.keysym.sym == SDLK_t)
+				{
+					trails = !trails;
+					if (!trails)
+					{
+						for (auto iter = balls.begin(); iter!= balls.end(); iter++)
+							iter->trail.clear();
+					}
+				}
+				else if (event.key.keysym.sym == SDLK_p)
+				{
+					persTrails = !persTrails;
+					if (!persTrails)
+					{
+						for (auto iter = balls.begin(); iter != balls.end(); iter++)
+						{
+							while (iter->trail.size() > TRAILLENGTH)
+								iter->trail.pop_back();
+						}
+					}
+				}
 			}
 		}
 
@@ -173,7 +195,7 @@ int main(int argc, char* argv[])
 			pos.x = iter->posX;
 			pos.y = iter->posY;
 			iter->trail.insert(iter->trail.begin(), pos); //Add to beginning
-			if (iter->trail.size() > TRAILLENGTH)
+			if (iter->trail.size() > TRAILLENGTH && !persTrails)
 				iter->trail.pop_back(); //Remove end
 		}
 
@@ -302,11 +324,9 @@ int main(int argc, char* argv[])
 					if (point == iter->trail.begin())
 					{
 						SDL_RenderDrawLine(engine->getRenderer(), iter->posX, iter->posY, point->x, point->y);
-						cout << "Rendering from ball to next trail point." << endl;
 						continue;
 					}
 					auto lastPoint = point - 1;
-					cout << "Rendering from point " << OUTPUT_COORDS(lastPoint->x, lastPoint->y)  " to " << OUTPUT_COORDS(point->x, point->y) << endl;
 					SDL_RenderDrawLine(engine->getRenderer(), lastPoint->x, lastPoint->y, point->x, point->y);
 				}
 			}

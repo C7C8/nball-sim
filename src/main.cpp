@@ -260,8 +260,6 @@ int main(int argc, char* argv[])
 			ball->vel.setY(ball->vel.getY() + (0.5 * (ball->forces.getY() / ball->mass) * PHYSTEP));
 		}
 
-		//Collisions
-#ifdef COLLISIONS
 		//Elastitc collisions
 #ifdef ECOLLISIONS
 		for (auto m1 = balls.begin(); m1 != balls.end(); m1++)
@@ -304,6 +302,7 @@ int main(int argc, char* argv[])
 		}
 #endif
 
+		//Inelastic collisions
 #ifdef ICOLLISIONS
 		for (auto m1 = balls.begin(); m1 != balls.end(); m1++)
 		{
@@ -326,9 +325,12 @@ int main(int argc, char* argv[])
 				newBall.posX = ((m1->mass * m1->posX) + (m2->mass * m2->posX)) / newBall.mass;
 				newBall.posY = ((m1->mass * m1->posY) + (m2->mass * m2->posY)) / newBall.mass;
 
-				m1 = balls.erase(m1) - 1; //Returns value AFTER
-				m2 = balls.erase(m2) - 1;
-				balls.push_back(newBall);
+				*m2 = newBall;
+				m1 = balls.erase(m1); //Returns value AFTER
+				if (m1 == balls.end() || m2 == balls.end())
+				{
+					break;
+				}
 			}
 		}
 #endif

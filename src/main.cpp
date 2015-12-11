@@ -500,6 +500,7 @@ Vector2D forcev(nball m1, nball m2)
 void randDistribution(vector<nball>* balls, int num, Texture sprite)
 {
 	for (int i = 0; i < NUMRAND; i++)
+	for (int i = 0; i < num; i++)
 	{
 		nball newBall(sprite, rand() % WX, rand() % WY, RANDINITMASS);
 		newBall.vel.setX(1);

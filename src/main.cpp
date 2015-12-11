@@ -33,6 +33,10 @@ using namespace Hydra;
 #define WX 1300
 #define WY 680
 
+#define TRIAL_MODE true
+#define MAX_TRIALS 10
+#define MAX_BALLS 30
+
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
 void randDistribution(vector<nball>* balls, int num, Texture sprite);
@@ -86,6 +90,8 @@ int main(int argc, char* argv[])
 	log << "Frame, Kinetic, Potential, Total" << endl;
 
 	Timer trialTimer;
+	int trialCount = 0;
+	int tBallCount = 10;
 	while (!quit)
 	{
 		frame++;
@@ -193,7 +199,27 @@ int main(int argc, char* argv[])
 					trialTimer.start();
 					randDistribution(&balls, NUMRAND, sprite);
 				}
+				else if (event.key.keysym.sym == SDLK_l && TRIAL_MODE)
+				{
+					balls.clear(); //Immediately finishes a condition
+					trialCount = 0;
+					tBallCount++;
+				}
 			}
+		}
+
+		if (TRIAL_MODE && balls.empty())
+		{
+			if (trialCount >= MAX_TRIALS)
+			{
+				tBallCount++;
+				trialCount = 0;
+			}
+			if (tBallCount > MAX_BALLS)
+				quit = true; //Stop the experiment when the ball count is exceeded
+			trialCount++;
+			randDistribution(&balls, tBallCount, sprite);
+			trialTimer.start();
 		}
 
 		//Reset accels
@@ -342,12 +368,12 @@ int main(int argc, char* argv[])
 				maxMass = iter->mass;
 			sumMass += iter->mass;
 		}
-		cout << "Largest ball has mass of " << maxMass << " and holds " << (maxMass * 100.0) / sumMass << "% of the total mass (" << sumMass << ")" << endl;
 		if (maxMass / sumMass >= MASSPERCENT)
 		{
 			trialTimer.stop();
-			cout << "Time: " << trialTimer.getTime() / 1000.f << endl;
-			return 0; //Whoa.
+			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s." << endl;
+			trialTimer.reset();
+			balls.clear();
 		}
 
 		//Edge collisions
@@ -499,7 +525,6 @@ Vector2D forcev(nball m1, nball m2)
 }
 void randDistribution(vector<nball>* balls, int num, Texture sprite)
 {
-	for (int i = 0; i < NUMRAND; i++)
 	for (int i = 0; i < num; i++)
 	{
 		nball newBall(sprite, rand() % WX, rand() % WY, RANDINITMASS);

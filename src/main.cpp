@@ -25,9 +25,10 @@ using namespace Hydra;
 //#define DIST_CHECK
 #define COMSIZE 4.0
 #define TRAILLENGTH 200
-#define NUMRAND 15
+#define NUMRAND 50
 #define RANDINITVEL 40.0
 #define RANDINITMASS 160.0
+#define MASSPERCENT 0.7
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -80,6 +81,7 @@ int main(int argc, char* argv[])
 	log.open("log.csv");
 	log << "Frame, Kinetic, Potential, Total" << endl;
 
+	Timer trialTimer;
 	while (!quit)
 	{
 		frame++;
@@ -184,6 +186,7 @@ int main(int argc, char* argv[])
 				}
 				else if (event.key.keysym.sym == SDLK_o)
 				{
+					trialTimer.start();
 					for (int i = 0; i < NUMRAND; i++)
 					{
 						nball newBall(sprite, rand() % engine->getWXSize(), rand() % engine->getWYSize(), RANDINITMASS);
@@ -343,7 +346,13 @@ int main(int argc, char* argv[])
 				maxMass = iter->mass;
 			sumMass += iter->mass;
 		}
-		cout << "Largest ball has mass of " << maxMass << " and holds " << (maxMass * 100.0) / sumMass << "% of the total mass" << endl;
+		cout << "Largest ball has mass of " << maxMass << " and holds " << (maxMass * 100.0) / sumMass << "% of the total mass (" << sumMass << ")" << endl;
+		if (maxMass / sumMass >= MASSPERCENT)
+		{
+			trialTimer.stop();
+			cout << "Time: " << trialTimer.getTime() / 1000.f << endl;
+			return 0; //Whoa.
+		}
 
 		//Edge collisions
 		for (auto iter = balls.begin(); iter != balls.end(); iter++)

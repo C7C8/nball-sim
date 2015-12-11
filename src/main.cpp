@@ -30,8 +30,12 @@ using namespace Hydra;
 #define RANDINITMASS 160.0
 #define MASSPERCENT 0.7
 
+#define WX 1300
+#define WY 680
+
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
+void randDistribution(vector<nball>* balls, int num, Texture sprite);
 
 struct nball
 {
@@ -52,7 +56,7 @@ int main(int argc, char* argv[])
 	srand(time(0));
 	HydraEngine* engine = HydraEngine::getInstance();
 	engine->init();
-	engine->setWSize(1300, 680);
+	engine->setWSize(WX, WY);
 	engine->setWTitle("N-Body Simulator");
 	TextureManager* tManage = TextureManager::getInstance();
 	tManage->loadTexture("Ball2.png", "ball");
@@ -187,15 +191,7 @@ int main(int argc, char* argv[])
 				else if (event.key.keysym.sym == SDLK_o)
 				{
 					trialTimer.start();
-					for (int i = 0; i < NUMRAND; i++)
-					{
-						nball newBall(sprite, rand() % engine->getWXSize(), rand() % engine->getWYSize(), RANDINITMASS);
-						newBall.vel.setX(1);
-						newBall.vel.setY(0);
-						newBall.vel.setMag(RANDINITVEL);
-						newBall.vel.rotate(Angle::toRads(rand() % 360));
-						balls.push_back(newBall);
-					}
+					randDistribution(&balls, NUMRAND, sprite);
 				}
 			}
 		}
@@ -500,4 +496,16 @@ Vector2D forcev(nball m1, nball m2)
 
 	force.setMag((GRAV_CONST * -m1.mass * m2.mass) / (force.getMag() * force.getMag())); //Gravity formula for acceleration
 	return force;
+}
+void randDistribution(vector<nball>* balls, int num, Texture sprite)
+{
+	for (int i = 0; i < NUMRAND; i++)
+	{
+		nball newBall(sprite, rand() % WX, rand() % WY, RANDINITMASS);
+		newBall.vel.setX(1);
+		newBall.vel.setY(0);
+		newBall.vel.setMag(RANDINITVEL);
+		newBall.vel.rotate(Angle::toRads(rand() % 360));
+		balls->push_back(newBall);
+	}
 }

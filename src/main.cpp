@@ -25,7 +25,7 @@ using namespace Hydra;
 //#define DIST_CHECK
 #define COMSIZE 4.0
 #define TRAILLENGTH 200
-#define NUMRAND 50
+#define NUMRAND 15
 #define RANDINITVEL 40.0
 #define RANDINITMASS 160.0
 #define MASSPERCENT 0.7
@@ -33,9 +33,9 @@ using namespace Hydra;
 #define WX 1300
 #define WY 680
 
-#define TRIAL_MODE true
-#define MAX_TRIALS 10
-#define MAX_BALLS 30
+#define TRIAL_MODE false
+#define MAX_TRIALS 5
+#define MAX_BALLS 100
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -87,11 +87,11 @@ int main(int argc, char* argv[])
 	system("rm log.csv"); //Whoops! How did THIS get here?
 	ofstream log;
 	log.open("log.csv");
-	log << "Frame, Kinetic, Potential, Total" << endl;
+	log << "BallCount, Trial, Time, Percent" << endl;
 
 	Timer trialTimer;
 	int trialCount = 0;
-	int tBallCount = 10;
+	int tBallCount = 30;
 	while (!quit)
 	{
 		frame++;
@@ -201,9 +201,10 @@ int main(int argc, char* argv[])
 				}
 				else if (event.key.keysym.sym == SDLK_l && TRIAL_MODE)
 				{
-					balls.clear(); //Immediately finishes a condition
-					trialCount = 0;
-					tBallCount++;
+					trialTimer.stop();
+					trialTimer.reset();
+					balls.clear(); //Immediately skips a trial
+					trialCount--;
 				}
 			}
 		}
@@ -368,10 +369,11 @@ int main(int argc, char* argv[])
 				maxMass = iter->mass;
 			sumMass += iter->mass;
 		}
-		if (maxMass / sumMass >= MASSPERCENT)
+		if (maxMass / sumMass >= MASSPERCENT && TRIAL_MODE)
 		{
 			trialTimer.stop();
-			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s." << endl;
+			log << tBallCount << "," << trialCount << "," << trialTimer.getTime() / 1000.f << "," << maxMass * 100.0 / sumMass << endl;
+			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s (" << maxMass * 100.0 / sumMass << ")" << endl;
 			trialTimer.reset();
 			balls.clear();
 		}

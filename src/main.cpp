@@ -335,6 +335,16 @@ int main(int argc, char* argv[])
 		}
 #endif
 
+		//Get percentage mass of largest ball
+		double maxMass = 0, sumMass = 0;
+		for (auto iter = balls.begin(); iter != balls.end(); iter++)
+		{
+			if (iter->mass > maxMass)
+				maxMass = iter->mass;
+			sumMass += iter->mass;
+		}
+		cout << "Largest ball has mass of " << maxMass << " and holds " << (maxMass * 100.0) / sumMass << "% of the total mass" << endl;
+
 		//Edge collisions
 		for (auto iter = balls.begin(); iter != balls.end(); iter++)
 		{

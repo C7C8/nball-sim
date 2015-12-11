@@ -19,12 +19,15 @@ using namespace Hydra;
 #define FPS 60.0
 #define TIMESTEP (1000.0 / FPS)
 #define PHYSTEP .016
+#define ICOLLISIONS
 //#define ECOLLISIONS
 //#define AIR_RESISTANCE 0.001
 //#define DIST_CHECK
-#define ICOLLISIONS
 #define COMSIZE 4.0
 #define TRAILLENGTH 200
+#define NUMRAND 15
+#define RANDINITVEL 40.0
+#define RANDINITMASS 160.0
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -48,7 +51,7 @@ int main(int argc, char* argv[])
 	srand(time(0));
 	HydraEngine* engine = HydraEngine::getInstance();
 	engine->init();
-	engine->setWSize(1200, 650);
+	engine->setWSize(1300, 680);
 	engine->setWTitle("N-Body Simulator");
 	TextureManager* tManage = TextureManager::getInstance();
 	tManage->loadTexture("Ball2.png", "ball");
@@ -177,6 +180,18 @@ int main(int argc, char* argv[])
 							while (iter->trail.size() > TRAILLENGTH)
 								iter->trail.pop_back();
 						}
+					}
+				}
+				else if (event.key.keysym.sym == SDLK_o)
+				{
+					for (int i = 0; i < NUMRAND; i++)
+					{
+						nball newBall(sprite, rand() % engine->getWXSize(), rand() % engine->getWYSize(), RANDINITMASS);
+						newBall.vel.setX(1);
+						newBall.vel.setY(0);
+						newBall.vel.setMag(RANDINITVEL);
+						newBall.vel.rotate(Angle::toRads(rand() % 360));
+						balls.push_back(newBall);
 					}
 				}
 			}

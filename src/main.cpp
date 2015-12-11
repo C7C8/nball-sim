@@ -9,21 +9,22 @@ using namespace Hydra;
 
 //Macros
 #define OUTPUT_COORDS(a, b) "(" << a << ", " << b << ")"
-#define SIZEMASS_RATIO(m) /*15.0 * pow(m, 1.0 / 3.0*/ 0.1 * m
+#define SIZEMASS_RATIO(m) 1.1 * sqrt(m)
 
 //Constants
-#define GRAV_CONST 550.0
+#define GRAV_CONST 1000.0
 #define JUMP_CONST 0.025
 #define THROW_CONST 2.0
 #define MAX_MASS 500
 #define FPS 60.0
 #define TIMESTEP (1000.0 / FPS)
 #define PHYSTEP .016
-//#define COLLISIONS
+//#define ECOLLISIONS
 //#define AIR_RESISTANCE 0.001
 //#define DIST_CHECK
+#define ICOLLISIONS
 #define COMSIZE 4.0
-#define TRAILLENGTH 150
+#define TRAILLENGTH 200
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -50,7 +51,7 @@ int main(int argc, char* argv[])
 	engine->setWSize(1200, 650);
 	engine->setWTitle("N-Body Simulator");
 	TextureManager* tManage = TextureManager::getInstance();
-	tManage->loadTexture("Ball.png", "ball");
+	tManage->loadTexture("Ball2.png", "ball");
 	Texture sprite = tManage->getTexture("ball");
 
 	SDL_Rect screenRect;
@@ -246,6 +247,8 @@ int main(int argc, char* argv[])
 
 		//Collisions
 #ifdef COLLISIONS
+		//Elastitc collisions
+#ifdef ECOLLISIONS
 		for (auto m1 = balls.begin(); m1 != balls.end(); m1++)
 		{
 			for (auto m2 = balls.begin(); m2 != balls.end(); m2++)
@@ -282,6 +285,35 @@ int main(int argc, char* argv[])
 					m1->posX += m1->vel.getX() * JUMP_CONST; m1->posY += m1->vel.getY() * JUMP_CONST;
 					m2->posX += m2->vel.getX() * JUMP_CONST; m2->posY += m2->vel.getY() * JUMP_CONST;
 				}
+			}
+		}
+#endif
+
+#ifdef ICOLLISIONS
+		for (auto m1 = balls.begin(); m1 != balls.end(); m1++)
+		{
+			for (auto m2 = balls.begin(); m2 != balls.end(); m2++)
+			{
+				if (m2 == m1)
+					continue; //skip self
+
+				Vector2D distance(m2->posX - m1->posX, m2->posY - m1->posY);
+				if (distance.getMag() >= (m1->size + m2->size) / 2.f)
+					continue; //Ignore non-colliding objects
+
+				nball newBall(sprite, 0, 0);
+				newBall.mass = m1->mass + m2->mass;
+				newBall.size = SIZEMASS_RATIO(newBall.mass);
+				newBall.vel.setX(((m1->mass * m1->vel.getX()) + (m2->mass * m2->vel.getX())) / newBall.mass);
+				newBall.vel.setY(((m1->mass * m1->vel.getY()) + (m2->mass * m2->vel.getY())) / newBall.mass);
+
+				//Compute center of mass
+				newBall.posX = ((m1->mass * m1->posX) + (m2->mass * m2->posX)) / newBall.mass;
+				newBall.posY = ((m1->mass * m1->posY) + (m2->mass * m2->posY)) / newBall.mass;
+
+				m1 = balls.erase(m1) - 1; //Returns value AFTER
+				m2 = balls.erase(m2) - 1;
+				balls.push_back(newBall);
 			}
 		}
 #endif

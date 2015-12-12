@@ -352,11 +352,8 @@ int main(int argc, char* argv[])
 				newBall.posY = ((m1->mass * m1->posY) + (m2->mass * m2->posY)) / newBall.mass;
 
 				*m2 = newBall;
-				m1 = balls.erase(m1); //Returns value AFTER
-				if (m1 == balls.end() || m2 == balls.end())
-				{
-					break;
-				}
+				balls.erase(m1); //Returns value AFTER
+				m1 = m2 = balls.begin(); //Cheat method of fixing crash bug
 			}
 		}
 #endif
@@ -373,7 +370,7 @@ int main(int argc, char* argv[])
 		{
 			trialTimer.stop();
 			log << tBallCount << "," << trialCount << "," << trialTimer.getTime() / 1000.f << "," << maxMass * 100.0 / sumMass << endl;
-			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s (" << maxMass * 100.0 / sumMass << ")" << endl;
+			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s (" << maxMass * 100.0 / sumMass << "%)" << endl;
 			trialTimer.reset();
 			balls.clear();
 		}

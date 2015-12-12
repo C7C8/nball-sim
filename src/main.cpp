@@ -33,9 +33,10 @@ using namespace Hydra;
 #define WX 1300
 #define WY 680
 
-#define SCIENCE_MODE true
-#define MAX_TRIALS 5
+#define SCIENCE_MODE false
+#define MAX_TRIALS 50
 #define MAX_BALLS 100
+#define TIME_CAP 60.0
 
 //Functions
 Vector2D forcev(struct nball m1, struct nball m2);
@@ -83,18 +84,16 @@ int main(int argc, char* argv[])
 	bool placing = false;
 
 	//Logging stuff
-	int frame = 0;
 	system("rm log.csv"); //Whoops! How did THIS get here?
 	ofstream log;
 	log.open("log.csv");
 	log << "BallCount, Trial, Time, Percent" << endl;
 
-	Timer trialTimer;
+	double trialTime = 0;
 	int trialCount = 0;
-	int tBallCount = 30;
+	int tBallCount = 20;
 	while (!quit)
 	{
-		frame++;
 		fpstimer.start();
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
@@ -196,13 +195,11 @@ int main(int argc, char* argv[])
 				}
 				else if (event.key.keysym.sym == SDLK_o)
 				{
-					trialTimer.start();
 					randDistribution(&balls, NUMRAND, sprite);
 				}
 				else if (event.key.keysym.sym == SDLK_l && SCIENCE_MODE)
 				{
-					trialTimer.stop();
-					trialTimer.reset();
+					trialTime = 0;
 					balls.clear(); //Immediately skips a trial
 					trialCount--;
 				}
@@ -220,7 +217,19 @@ int main(int argc, char* argv[])
 				quit = true; //Stop the experiment when the ball count is exceeded
 			trialCount++;
 			randDistribution(&balls, tBallCount, sprite);
-			trialTimer.start();
+			trialTime = 0;
+		}
+
+		//Increment simulation time for science mode
+		if (SCIENCE_MODE)
+		{
+			trialTime += TIMESTEP;
+			if (trialTime / 1000.0 >= TIME_CAP)
+			{
+				balls.clear(); //don't exceed the max time
+				cout << "Trial #" << trialCount << " exceeded time cap of " << TIME_CAP << "s; aborting" << endl;
+				trialCount--;
+			}
 		}
 
 		//Reset accels
@@ -286,7 +295,7 @@ int main(int argc, char* argv[])
 			ball->vel.setY(ball->vel.getY() + (0.5 * (ball->forces.getY() / ball->mass) * PHYSTEP));
 		}
 
-		//Elastitc collisions
+		//Elastic collisions
 #ifdef ECOLLISIONS
 		for (auto m1 = balls.begin(); m1 != balls.end(); m1++)
 		{
@@ -368,10 +377,8 @@ int main(int argc, char* argv[])
 		}
 		if (maxMass / sumMass >= MASSPERCENT && SCIENCE_MODE)
 		{
-			trialTimer.stop();
-			log << tBallCount << "," << trialCount << "," << trialTimer.getTime() / 1000.f << "," << maxMass * 100.0 / sumMass << endl;
-			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTimer.getTime() / 1000.0 << "s (" << maxMass * 100.0 / sumMass << "%)" << endl;
-			trialTimer.reset();
+			log << tBallCount << "," << trialCount << "," << trialTime / 1000.0 << "," << maxMass * 100.0 / sumMass << endl;
+			cout << "Trial " << trialCount << " with " << tBallCount << " lasted " << trialTime / 1000.0 << "s (" << maxMass * 100.0 / sumMass << "%)" << endl;
 			balls.clear();
 		}
 

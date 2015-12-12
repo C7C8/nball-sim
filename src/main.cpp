@@ -33,7 +33,7 @@ using namespace Hydra;
 #define WX 1300
 #define WY 680
 
-#define TRIAL_MODE false
+#define SCIENCE_MODE true
 #define MAX_TRIALS 5
 #define MAX_BALLS 100
 
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
 					trialTimer.start();
 					randDistribution(&balls, NUMRAND, sprite);
 				}
-				else if (event.key.keysym.sym == SDLK_l && TRIAL_MODE)
+				else if (event.key.keysym.sym == SDLK_l && SCIENCE_MODE)
 				{
 					trialTimer.stop();
 					trialTimer.reset();
@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		if (TRIAL_MODE && balls.empty())
+		if (SCIENCE_MODE && balls.empty())
 		{
 			if (trialCount >= MAX_TRIALS)
 			{
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
 				newBall.vel.setX(((m1->mass * m1->vel.getX()) + (m2->mass * m2->vel.getX())) / newBall.mass);
 				newBall.vel.setY(((m1->mass * m1->vel.getY()) + (m2->mass * m2->vel.getY())) / newBall.mass);
 
-				//Compute center of mass
+				//Compute center of mass and move "new" ball to position
 				newBall.posX = ((m1->mass * m1->posX) + (m2->mass * m2->posX)) / newBall.mass;
 				newBall.posY = ((m1->mass * m1->posY) + (m2->mass * m2->posY)) / newBall.mass;
 
@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
 				maxMass = iter->mass;
 			sumMass += iter->mass;
 		}
-		if (maxMass / sumMass >= MASSPERCENT && TRIAL_MODE)
+		if (maxMass / sumMass >= MASSPERCENT && SCIENCE_MODE)
 		{
 			trialTimer.stop();
 			log << tBallCount << "," << trialCount << "," << trialTimer.getTime() / 1000.f << "," << maxMass * 100.0 / sumMass << endl;

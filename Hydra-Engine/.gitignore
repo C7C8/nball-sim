@@ -1,0 +1,17 @@
+#Custom gitingore things
+*.dll
+lib/DLL/*
+*.vcxproj
+*.filters
+*.cbp
+*.depend
+*.layout
+/doxygen
+/obj
+*.depend
+/bin
+*.bmp
+sysLog.txt
+ABOUT.txt
+TODO.txt
+/lib

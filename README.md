@@ -32,7 +32,8 @@ around with graphics a little bit.
 ##Compiling
 I'm working on fixing it so it will compile using autotools, which it does...
 it just crashes after loading the sprite it's supposed to. If you want to try
-and compile it, you'll need the SDL2 and SLD2-image, and the following flags:
+and compile it, you'll need the SDL2 and SLD2-image development libraries, as
+well as the following flags:
 
     -lSLD2 -lSDL2_image -std=c++1y
 
